@@ -23,7 +23,7 @@ function NumberLists() {
     });
 
     return (
-        <Grid stretched ={true} columns='equal' className="userList-wrap">
+        <Grid stretched ={true} columns={3} padded className="userList-wrap">
             {
                 userList.map((user , index)=> {
                 
