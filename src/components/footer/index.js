@@ -1,14 +1,10 @@
-
+import React from 'react';
 import './css.css';
-
-
 
 function Footer() {
   return (
     <footer className="App-footer">
-        
-        aaron_chen
-
+      aaron_chen
     </footer>
   );
 }

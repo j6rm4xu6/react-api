@@ -1,11 +1,19 @@
 .App {
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
   position: relative;
-  height: auto;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 
 
+.wrap-content{
+  max-width: 1140px;
+  margin: auto;
+  padding: 0 15px;
+}
+
+.App-section{
+  flex :1;
+}

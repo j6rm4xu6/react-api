@@ -1,46 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { Grid ,Segment} from 'semantic-ui-react'
-import './css.css'
+import { Table } from 'semantic-ui-react';
+import './css.css';
 
+function showTime(date) {
+  const y = date.slice(0, 4);
+  const m = date.slice(5, 7);
+  const d = date.slice(8, 10);
+  const creatTime = `${y}年${m}月${d}日`;
+  return creatTime;
+}
 
 function NumberLists() {
-
-    const [ userList , setUserList ] =  useState([]);
-   
-
-    useEffect(()=>{
-        fetch(
-            'http://localhost:9988/api/users',
+  const [userList, setUserList] = useState([]);
+  console.log('component');
+  useEffect(() => {
+    console.log('useEffect');
+    fetch('http://localhost:9988/api/users', { method: 'GET' }).then((res) => res.json()).then((response) => {
+      setUserList(response.ret);
+    }).catch((error) => console.log(error));
+  }, []);
+  return (
+    <div className="wrap-content">
+      {console.log('render')}
+      <div className="number-table">
+        <Table singleLine>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>會員編號</Table.HeaderCell>
+              <Table.HeaderCell>會員名稱</Table.HeaderCell>
+              <Table.HeaderCell>註冊時間</Table.HeaderCell>
+              <Table.HeaderCell>狀態</Table.HeaderCell>
+              <Table.HeaderCell>異常</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {
-                method:"GET",
+                userList.map((user) => (
+                  <Table.Row key={user.id}>
+                    <Table.Cell>{user.id}</Table.Cell>
+                    <Table.Cell>{user.username}</Table.Cell>
+                    <Table.Cell>{showTime(user.created_at)}</Table.Cell>
+                    <Table.Cell>{ user.enable ? '啟用' : '停用'}</Table.Cell>
+                    <Table.Cell>{user.locked ? '' : '已封鎖'}</Table.Cell>
+                  </Table.Row>
+                ))
             }
-        )
-            .then(res => res.json())
-            .then(response => {
-                setUserList ( response.ret );
-            })
-            .catch(error => console.log(error));
-    });
-
-    return (
-        <Grid stretched ={true} columns={3} padded className="userList-wrap">
-            {
-                userList.map((user , index)=> {
-                
-                    return(
-                        <div key={user.id}>
-                            <Grid.Column className="user-box" >
-                                <Segment>
-                                    <p data-enable={user.enable} data-locked={user.locked}>會員編號：{user.id}<br/>使用者名稱：{user.username}<br/>註冊時間：{user.created_at}</p>
-                                </Segment>
-                            </Grid.Column>
-                        </div>
-                    );
-                
-                })
-            }
-        </Grid>
-    );
+          </Table.Body>
+        </Table>
+      </div>
+    </div>
+  );
 }
 
 export default NumberLists;

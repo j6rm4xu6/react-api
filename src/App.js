@@ -1,22 +1,20 @@
-import './App.css';
-import 'semantic-ui-css/semantic.min.css'
-import Slider from './components/slider';
-import Footer from './components/footer'
+import React from 'react';
+import 'semantic-ui-css/semantic.min.css';
+import Sidebar from './components/sidebar';
+import Footer from './components/footer';
 import NumberLists from './components/NumberLists';
-import Section from './components/section';
 import Header from './components/header';
-
+import './App.css';
 
 function App() {
   return (
     <div className="App">
       <Header />
-      <Slider />
-      <Section >  
+      <Sidebar />
+      <section className="App-section">
         <NumberLists />
-      </Section>
+      </section>
       <Footer />
-
     </div>
   );
 }
