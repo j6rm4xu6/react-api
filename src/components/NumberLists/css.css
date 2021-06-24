@@ -1,3 +1,19 @@
 .number-table{
-    padding:40px 0 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding:40px 0 60px;
 }
+
+.sform{
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.sform > div{
+  padding:0 15px;
+  flex: 0 1 33%;
+}
+.sform button{margin:0 0 1em!important;}
