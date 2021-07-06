@@ -72,15 +72,7 @@ const NumberLists = () => {
     setApiData(query);
     setUserInfos(userQuery);
   };
-  const apiError = (error) => {
-    if (error.response) {
-      alert(`API抓取異常，錯誤代碼為:${error.response.status}`);
-    } else if (error.request) {
-      alert(`API發送請求，但沒有接到回應，Error:${error.request}`);
-    } else {
-      alert(`Error:${error.message}`);
-    }
-  };
+
   // 更新列表
   useEffect(() => {
     const fetchData = async () => {
@@ -91,7 +83,9 @@ const NumberLists = () => {
           alert('查無此資料');
           clearPage();
         }
-      }).catch((error) => { apiError(error); });
+      }).catch((error) => {
+        console.log(error);
+      });
     };
     fetchData();
   }, [apiData, updateData]);
@@ -157,9 +151,7 @@ const NumberLists = () => {
   };
 
   const createBtn = async () => {
-    await userCreate(userData).catch((error) => {
-      apiError(error);
-    });
+    await userCreate(userData);
 
     const userTotal = await apiUser(apiData).then((response) => response.data.pagination.total);
     let firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
@@ -185,9 +177,7 @@ const NumberLists = () => {
   // 修改會員
   const modifyBtn = async () => {
     const userInfo = { ...userData };
-    await userModify(userInfo.id, userInfo).catch((error) => {
-      apiError(error);
-    });
+    await userModify(userInfo.id + 1, userInfo);
     const userTotal = await apiUser(apiData).then((response) => response.data.pagination.total);
     const firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
     if ((activePage !== 1) && (userTotal % pageList.max_results === 0)) {
@@ -209,9 +199,7 @@ const NumberLists = () => {
   // 刪除會員
   const deleteBtn = async () => {
     const userInfo = { ...deleteUser };
-    await userDelete(userInfo.id).catch((error) => {
-      apiError(error);
-    });
+    await userDelete(userInfo.id);
     const userTotal = await apiUser(apiData).then((response) => response.data.pagination.total);
     const firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
     if ((activePage !== 1) && (userTotal % pageList.max_results === 0)) {
@@ -363,89 +351,89 @@ const NumberLists = () => {
           >
             會員新增
           </button>
-          {/* 彈跳視窗 */}
-          <Modal
-            onClose={() => setFormBtnOpen(false)}
-            onOpen={() => setFormBtnOpen(true)}
-            open={formBtnOpen}
-          >
-            <Modal.Header>{modifyCheck ? '會員修改' : '新增會員'}</Modal.Header>
-            <Modal.Content>
-              <Form
-                id="create-form"
-                className="form-style"
-                onSubmit={() => {
-                  if (errorCheck(userData)) {
-                    if (modifyCheck) {
-                      modifyBtn();
-                      setModifyCheck(false);
-                      clearCreateData();
-                    } else {
-                      createBtn();
-                      clearCreateData();
-                    }
-                    setFormBtnOpen(false);
-                  }
-                }}
-              >
-                <Form.Input
-                  label="會員名稱"
-                  name="username"
-                  value={userData.username}
-                  onChange={(e, pageInfo) => {
-                    setUserData({ ...userData, username: pageInfo.value });
-                  }}
-                  error={!(userData.username)}
-                />
-                <Form.Field>
-                  <p>狀態</p>
-                  <Dropdown
-                    name="enable"
-                    placeholder="請選擇"
-                    selection
-                    options={formEnable}
-                    value={parseInt(userData.enable, 10)}
-                    onChange={(e, pageInfo) => {
-                      setUserData({ ...userData, enable: parseInt(pageInfo.value, 10) });
-                    }}
-                    error={!(String(userData.enable))}
-                  />
-                </Form.Field>
-                <Form.Field>
-                  <p>異常</p>
-                  <Dropdown
-                    name="locked"
-                    placeholder="請選擇"
-                    selection
-                    options={formLocked}
-                    value={parseInt(userData.locked, 10)}
-                    onChange={(e, pageInfo) => {
-                      setUserData({ ...userData, locked: parseInt(pageInfo.value, 10) });
-                    }}
-                    error={!(String(userData.locked))}
-                  />
-                </Form.Field>
-              </Form>
-            </Modal.Content>
-            <Modal.Actions>
-              <button
-                type="button"
-                className="ui black button"
-                onClick={() => {
-                  setFormBtnOpen(false);
-                  clearCreateData();
-                  setModifyCheck(false);
-                }}
-              >
-                取消
-              </button>
-              <button type="submit" className="ui positive button" form="create-form">
-                {modifyCheck ? '修改' : '新增'}
-              </button>
-            </Modal.Actions>
-          </Modal>
         </div>
       </div>
+      {/* 彈跳視窗 */}
+      <Modal
+        onClose={() => setFormBtnOpen(false)}
+        onOpen={() => setFormBtnOpen(true)}
+        open={formBtnOpen}
+      >
+        <Modal.Header>{modifyCheck ? '會員修改' : '新增會員'}</Modal.Header>
+        <Modal.Content>
+          <Form
+            id="create-form"
+            className="form-style"
+            onSubmit={() => {
+              if (errorCheck(userData)) {
+                if (modifyCheck) {
+                  modifyBtn();
+                  setModifyCheck(false);
+                  clearCreateData();
+                } else {
+                  createBtn();
+                  clearCreateData();
+                }
+                setFormBtnOpen(false);
+              }
+            }}
+          >
+            <Form.Input
+              label="會員名稱"
+              name="username"
+              value={userData.username}
+              onChange={(e, pageInfo) => {
+                setUserData({ ...userData, username: pageInfo.value });
+              }}
+              error={!(userData.username)}
+            />
+            <Form.Field>
+              <p>狀態</p>
+              <Dropdown
+                name="enable"
+                placeholder="請選擇"
+                selection
+                options={formEnable}
+                value={parseInt(userData.enable, 10)}
+                onChange={(e, pageInfo) => {
+                  setUserData({ ...userData, enable: parseInt(pageInfo.value, 10) });
+                }}
+                error={!(String(userData.enable))}
+              />
+            </Form.Field>
+            <Form.Field>
+              <p>異常</p>
+              <Dropdown
+                name="locked"
+                placeholder="請選擇"
+                selection
+                options={formLocked}
+                value={parseInt(userData.locked, 10)}
+                onChange={(e, pageInfo) => {
+                  setUserData({ ...userData, locked: parseInt(pageInfo.value, 10) });
+                }}
+                error={!(String(userData.locked))}
+              />
+            </Form.Field>
+          </Form>
+        </Modal.Content>
+        <Modal.Actions>
+          <button
+            type="button"
+            className="ui black button"
+            onClick={() => {
+              setFormBtnOpen(false);
+              clearCreateData();
+              setModifyCheck(false);
+            }}
+          >
+            取消
+          </button>
+          <button type="submit" className="ui positive button" form="create-form">
+            {modifyCheck ? '修改' : '新增'}
+          </button>
+        </Modal.Actions>
+      </Modal>
       {/* 刪除彈跳視窗 */}
       <Confirm
         className="remove-form"
