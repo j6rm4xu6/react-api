@@ -3,7 +3,7 @@ import {
   Table, Pagination, Grid, Form, Modal, Dropdown, Confirm,
 } from 'semantic-ui-react';
 import {
-  apiUser, userDelete, userCreate, userModify,
+  apiUser, userModify, userDelete, userCreate,
 } from './api';
 import './css.css';
 
@@ -12,7 +12,6 @@ const NumberLists = () => {
   const query = {
     first_result: 0,
     max_results: 20,
-    total: 50,
   };
   const userQuery = {
     username: '',
@@ -20,6 +19,11 @@ const NumberLists = () => {
     locked: '',
     start_created_at: '',
     end_created_at: '',
+  };
+  const totalData = {
+    first_result: 0,
+    max_results: 20,
+    total: 50,
   };
 
   // 表單選項
@@ -45,28 +49,30 @@ const NumberLists = () => {
   // 顯示會員列表
   const [apiData, setApiData] = useState(query);
   const [userList, setUserList] = useState([]);
-  const [pageList, setPageList] = useState(query);
+  const [pageList, setPageList] = useState(totalData);
   const [activePage, setActivePage] = useState(1);
   // 搜尋會員資料
   const [userInfos, setUserInfos] = useState(userQuery);
 
   // 建立、修改、刪除
-  const [formBtnOpen, setFormBtnOpen] = useState(false);
+  const [createBtnOpen, setCreateBtnOpen] = useState(false);
+  const [modifyBtnOpen, setModifyBtnOpen] = useState(false);
   const [deleteBtnOpen, setDeleteBtnOpen] = useState(false);
   const [updateData, setUpdateData] = useState({});
-  const [modifyCheck, setModifyCheck] = useState(false);
-
-  const [userData, setUserData] = useState({
+  const [createUser, setCreateUser] = useState({
+    username: '',
+    enable: '',
+    locked: '',
+  });
+  const [modifyUser, setModifyUser] = useState({
     id: '',
     username: '',
     enable: '',
     locked: '',
   });
-
   const [deleteUser, setDeleteUser] = useState({
     id: '',
   });
-
   // 清除表單內容
   const clearPage = () => {
     setApiData(query);
@@ -128,12 +134,11 @@ const NumberLists = () => {
   };
 
   const clearCreateData = () => {
-    setUserData({
+    setCreateUser({
       username: '',
       enable: '',
       locked: '',
     });
-    setActivePage(1);
   };
 
   // 切換頁面
@@ -150,24 +155,64 @@ const NumberLists = () => {
   // 新增會員
   const errorCheck = (userInfo) => {
     const errorName = userInfo.username;
-    const errorLocked = String(userInfo.locked);
-    const errorEnable = String(userInfo.enable);
+    const errorLocked = userInfo.locked.toString();
+    const errorEnable = userInfo.enable.toString();
     const checkError = errorName && errorLocked && errorEnable;
     return checkError;
   };
+  // 抓取表單內容
+  const getFormVal = (e, setFuntion) => {
+    const info = e;
+    const { value, name } = info;
+    switch (setFuntion) {
+      case 'create':
+        if (value !== '') {
+          setCreateUser({
+            ...createUser,
+            ...{ [name]: value },
+            ...{ [`${name}Error`]: true },
+          });
+        } else {
+          setCreateUser({
+            ...createUser,
+            ...{ [name]: value },
+            ...{ [`${name}Error`]: false },
+          });
+        }
+        break;
+
+      case 'modify':
+        if (value !== '') {
+          setModifyUser({
+            ...modifyUser,
+            ...{ [name]: value },
+            ...{ [`${name}Error`]: true },
+          });
+        } else {
+          setModifyUser({
+            ...modifyUser,
+            ...{ [name]: value },
+            ...{ [`${name}Error`]: false },
+          });
+        }
+        break;
+
+      default:
+        break;
+    }
+  };
 
   const createBtn = async () => {
-    await userCreate(userData).catch((error) => {
-      apiError(error);
-    });
-
-    const userTotal = await apiUser(apiData).then((response) => response.data.pagination.total);
+    const userTotal = pageList.total;
     let firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
     if (userTotal % pageList.max_results === 0) {
-      firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
+      firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results) + 1;
+      setActivePage(Math.ceil(pageList.total / pageList.max_results) + 1);
     }
+    await userCreate(createUser).catch((error) => {
+      apiError(error);
+    });
     setApiData({ ...apiData, first_result: firstResult * pageList.max_results });
-    setActivePage(Math.ceil(userTotal / pageList.max_results));
     setUpdateData(1);
   };
 
@@ -179,21 +224,22 @@ const NumberLists = () => {
       enable: parseInt(getUserInfo.enable, 10),
       locked: parseInt(getUserInfo.locked, 10),
     };
-    setUserData(userInfo);
+    setModifyUser(userInfo);
   };
 
   // 修改會員
   const modifyBtn = async () => {
-    const userInfo = { ...userData };
+    const userInfo = { ...modifyUser };
+    const userTotal = pageList.total - 1;
+    const firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
+    if ((activePage !== 1) && (userTotal % pageList.max_results === 0)) {
+      setActivePage(Math.ceil(pageList.total / pageList.max_results) - 1);
+      setApiData({ ...apiData, ...{ first_result: firstResult * pageList.max_results } });
+    }
+
     await userModify(userInfo.id, userInfo).catch((error) => {
       apiError(error);
     });
-    const userTotal = await apiUser(apiData).then((response) => response.data.pagination.total);
-    const firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
-    if ((activePage !== 1) && (userTotal % pageList.max_results === 0)) {
-      setActivePage(Math.ceil(userTotal / pageList.max_results));
-      setApiData({ ...apiData, first_result: firstResult * pageList.max_results });
-    }
     setUpdateData(userInfo);
   };
 
@@ -209,15 +255,16 @@ const NumberLists = () => {
   // 刪除會員
   const deleteBtn = async () => {
     const userInfo = { ...deleteUser };
+    const userTotal = pageList.total - 1;
+    const firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
+    if ((activePage !== 1) && (userTotal % pageList.max_results === 0)) {
+      setActivePage(Math.ceil(pageList.total / pageList.max_results) - 1);
+      setApiData({ ...apiData, first_result: firstResult * pageList.max_results });
+    }
+
     await userDelete(userInfo.id).catch((error) => {
       apiError(error);
     });
-    const userTotal = await apiUser(apiData).then((response) => response.data.pagination.total);
-    const firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
-    if ((activePage !== 1) && (userTotal % pageList.max_results === 0)) {
-      setActivePage(Math.ceil(userTotal / pageList.max_results));
-      setApiData({ ...apiData, first_result: firstResult * pageList.max_results });
-    }
     setUpdateData(userInfo);
   };
 
@@ -226,8 +273,8 @@ const NumberLists = () => {
       <div className="number-table">
         <Grid>
           <Grid.Column floated="right" width={16}>
-            <div>
-              <Form className="form-style">
+            <div className="pageInof">
+              <Form className="sform">
                 <Form.Input
                   label="會員名稱"
                   value={userInfos.username}
@@ -235,7 +282,7 @@ const NumberLists = () => {
                     setUserInfos({ ...userInfos, username: pageInfo.value });
                   }}
                 />
-                <Form.Field className="form-date">
+                <Form.Field className="formdate">
                   <p>開始日期</p>
                   <input
                     type="date"
@@ -246,7 +293,7 @@ const NumberLists = () => {
                     }}
                   />
                 </Form.Field>
-                <Form.Field className="form-date">
+                <Form.Field className="formdate">
                   <p>結束日期</p>
                   <input
                     type="date"
@@ -284,7 +331,7 @@ const NumberLists = () => {
                     }}
                   />
                 </Form.Field>
-                <div className="form-btn">
+                <div className="form_btn">
                   <button className="ui button" type="submit" onClick={searchPage}>搜尋</button>
                   <button className="ui button" type="submit" onClick={clearPage}>清除</button>
                 </div>
@@ -322,8 +369,7 @@ const NumberLists = () => {
                       type="button"
                       onClick={() => {
                         modifyInfo(user);
-                        setFormBtnOpen(true);
-                        setModifyCheck(true);
+                        setModifyBtnOpen(true);
                       }}
                     >
                       編輯
@@ -356,46 +402,34 @@ const NumberLists = () => {
             activePage={activePage}
             onPageChange={changePage}
           />
-          <button
-            type="button"
-            className="ui positive button"
-            onClick={() => setFormBtnOpen(true)}
-          >
-            會員新增
-          </button>
-          {/* 彈跳視窗 */}
+          {/* 新增彈跳視窗 */}
           <Modal
-            onClose={() => setFormBtnOpen(false)}
-            onOpen={() => setFormBtnOpen(true)}
-            open={formBtnOpen}
+            onClose={() => setCreateBtnOpen(false)}
+            onOpen={() => setCreateBtnOpen(true)}
+            open={createBtnOpen}
+            trigger={<button type="button" className="ui positive button">會員新增</button>}
           >
-            <Modal.Header>{modifyCheck ? '會員修改' : '新增會員'}</Modal.Header>
+            <Modal.Header>新增會員</Modal.Header>
             <Modal.Content>
               <Form
                 id="create-form"
-                className="form-style"
+                className="sform"
                 onSubmit={() => {
-                  if (errorCheck(userData)) {
-                    if (modifyCheck) {
-                      modifyBtn();
-                      setModifyCheck(false);
-                      clearCreateData();
-                    } else {
-                      createBtn();
-                      clearCreateData();
-                    }
-                    setFormBtnOpen(false);
+                  if (errorCheck(createUser)) {
+                    createBtn();
+                    clearCreateData();
+                    setCreateBtnOpen(false);
                   }
                 }}
               >
                 <Form.Input
                   label="會員名稱"
                   name="username"
-                  value={userData.username}
+                  value={createUser.username}
                   onChange={(e, pageInfo) => {
-                    setUserData({ ...userData, username: pageInfo.value });
+                    getFormVal(pageInfo, 'create');
                   }}
-                  error={!(userData.username)}
+                  error={!(createUser.username)}
                 />
                 <Form.Field>
                   <p>狀態</p>
@@ -404,11 +438,11 @@ const NumberLists = () => {
                     placeholder="請選擇"
                     selection
                     options={formEnable}
-                    value={parseInt(userData.enable, 10)}
+                    value={parseInt(createUser.enable, 10)}
                     onChange={(e, pageInfo) => {
-                      setUserData({ ...userData, enable: parseInt(pageInfo.value, 10) });
+                      getFormVal(pageInfo, 'create');
                     }}
-                    error={!(String(userData.enable))}
+                    error={!(createUser.enable.toString())}
                   />
                 </Form.Field>
                 <Form.Field>
@@ -418,11 +452,11 @@ const NumberLists = () => {
                     placeholder="請選擇"
                     selection
                     options={formLocked}
-                    value={parseInt(userData.locked, 10)}
+                    value={parseInt(createUser.locked, 10)}
                     onChange={(e, pageInfo) => {
-                      setUserData({ ...userData, locked: parseInt(pageInfo.value, 10) });
+                      getFormVal(pageInfo, 'create');
                     }}
-                    error={!(String(userData.locked))}
+                    error={!(createUser.locked.toString())}
                   />
                 </Form.Field>
               </Form>
@@ -432,20 +466,81 @@ const NumberLists = () => {
                 type="button"
                 className="ui black button"
                 onClick={() => {
-                  setFormBtnOpen(false);
+                  setCreateBtnOpen(false);
                   clearCreateData();
-                  setModifyCheck(false);
                 }}
               >
                 取消
               </button>
               <button type="submit" className="ui positive button" form="create-form">
-                {modifyCheck ? '修改' : '新增'}
+                新增
               </button>
             </Modal.Actions>
           </Modal>
         </div>
       </div>
+      {/* 修改彈跳視窗 */}
+      <Modal
+        onClose={() => setModifyBtnOpen(false)}
+        onOpen={() => setModifyBtnOpen(true)}
+        open={modifyBtnOpen}
+      >
+        <Modal.Header>修改會員</Modal.Header>
+        <Modal.Content>
+          <Form
+            id="modify-form"
+            className="sform"
+            onSubmit={() => {
+              if (errorCheck(modifyUser)) {
+                modifyBtn();
+                setModifyBtnOpen(false);
+              }
+            }}
+          >
+            <Form.Input
+              name="username"
+              label="會員名稱"
+              value={modifyUser.username}
+              onChange={(e, pageInfo) => {
+                getFormVal(pageInfo, 'modify');
+              }}
+              error={!(modifyUser.username)}
+            />
+            <Form.Field>
+              <p>狀態</p>
+              <Dropdown
+                name="enable"
+                placeholder="請選擇"
+                selection
+                options={formEnable}
+                value={parseInt(modifyUser.enable, 10)}
+                onChange={(e, pageInfo) => {
+                  getFormVal(pageInfo, 'modify');
+                }}
+                error={!(modifyUser.enable.toString())}
+              />
+            </Form.Field>
+            <Form.Field>
+              <p>異常</p>
+              <Dropdown
+                name="locked"
+                placeholder="請選擇"
+                selection
+                options={formLocked}
+                value={parseInt(modifyUser.locked, 10)}
+                onChange={(e, pageInfo) => {
+                  getFormVal(pageInfo, 'modify');
+                }}
+                error={!(modifyUser.locked.toString())}
+              />
+            </Form.Field>
+          </Form>
+        </Modal.Content>
+        <Modal.Actions>
+          <button type="button" className="ui black button" onClick={() => setModifyBtnOpen(false)}>取消</button>
+          <button type="submit" className="ui positive button" form="modify-form">修改</button>
+        </Modal.Actions>
+      </Modal>
       {/* 刪除彈跳視窗 */}
       <Confirm
         className="remove-form"
