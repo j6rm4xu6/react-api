@@ -1,0 +1,56 @@
+.number_table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0 60px;
+}
+.total {
+  text-align: right;
+}
+.form-style {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1.25rem 1.5rem;
+}
+.form-style > div {
+  padding-right: 15px;
+  flex: 0 1 33%;
+}
+.form-style p {
+  display: block;
+  margin: 0 0 0.28571429rem 0;
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 0.92857143em;
+  font-weight: 700;
+  text-transform: none;
+}
+.form-style .form-btn {
+  flex: 0 1 50%;
+}
+.form-style button {
+  margin: 0 1em 1em 0!important;
+}
+.table-control {
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+.table-control button {
+  position: absolute;
+  left: 0;
+}
+.table-control button.export {
+  position: absolute;
+  left: unset;
+  right: 0;
+}
+.remove-form .actions {
+  display: flex;
+  flex-direction: row-reverse;
+}
+.remove-form .ui.primary.button {
+  background-color: #db2828;
+}
+/*# sourceMappingURL=css.css.map */

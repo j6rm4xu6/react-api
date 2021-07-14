@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Pagination, Grid, Form, Modal, Dropdown, Confirm,
+  Table, Pagination, Grid, Form, Modal, Dropdown, Confirm, Header,
 } from 'semantic-ui-react';
+import { CSVLink } from 'react-csv';
 import {
-  apiUser, userDelete, userCreate, userModify,
+  apiUser, userCreate, userDelete, userModify,
 } from './api';
-import './css.css';
+
+import styles from './css.module.less';
 
 const NumberLists = () => {
   // 初始化
-  const query = {
+  const pageListQuery = {
     first_result: 0,
     max_results: 20,
-    total: 50,
+    total: 0,
   };
   const userQuery = {
     username: '',
@@ -41,54 +43,68 @@ const NumberLists = () => {
     { key: 1, text: '正常', value: 1 },
     { key: 2, text: '封鎖', value: 0 },
   ];
+  // error message box
+  const [errorMessage, setErrorMessage] = useState({});
 
   // 顯示會員列表
-  const [apiData, setApiData] = useState(query);
+  const [apiData, setApiData] = useState(userQuery);
   const [userList, setUserList] = useState([]);
-  const [pageList, setPageList] = useState(query);
-  const [activePage, setActivePage] = useState(1);
+  const [pageList, setPageList] = useState(pageListQuery);
   // 搜尋會員資料
   const [userInfos, setUserInfos] = useState(userQuery);
 
   // 建立、修改、刪除
   const [formBtnOpen, setFormBtnOpen] = useState(false);
   const [deleteBtnOpen, setDeleteBtnOpen] = useState(false);
-  const [updateData, setUpdateData] = useState({});
   const [modifyCheck, setModifyCheck] = useState(false);
 
   const [userData, setUserData] = useState({
     id: '',
     username: '',
-    enable: '',
-    locked: '',
+    enable: null,
+    locked: null,
   });
 
   const [deleteUser, setDeleteUser] = useState({
     id: '',
   });
-
+  // 匯出功能
+  const [exportBtnOpen, setExportBtnOpen] = useState(false);
+  const exportHeaders = [
+    { label: '會員編號', key: 'id' },
+    { label: '會員名稱', key: 'username' },
+    { label: '註冊時間', key: 'created_at' },
+    { label: '狀態', key: 'enable' },
+    { label: '異常', key: 'locked' },
+  ];
+  const exportData = [];
   // 清除表單內容
   const clearPage = () => {
-    setApiData(query);
+    setApiData(userQuery);
     setUserInfos(userQuery);
   };
 
   // 更新列表
+  const fetchData = async (data) => {
+    await apiUser(data).then((response) => {
+      setUserList(response.data.ret);
+      setPageList(response.data.pagination);
+      if (response.data.pagination.total === 0) {
+        setErrorMessage({
+          open: true,
+          header: '查無此資料',
+          message: '換個關鍵字吧',
+        });
+        clearPage();
+      }
+    }).catch((error) => {
+      setErrorMessage(error);
+    });
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      await apiUser(apiData).then((response) => {
-        setUserList(response.data.ret);
-        setPageList(response.data.pagination);
-        if (response.data.pagination.total === 0) {
-          alert('查無此資料');
-          clearPage();
-        }
-      }).catch((error) => {
-        console.log(error);
-      });
-    };
-    fetchData();
-  }, [apiData, updateData]);
+    fetchData(apiData);
+  }, [apiData]);
 
   // 顯示年月日
   const showTime = (date) => {
@@ -117,7 +133,6 @@ const NumberLists = () => {
       searchQuery.start_created_at = '';
       searchQuery.end_created_at = '';
     }
-    setActivePage(1);
     setApiData(searchQuery);
   };
 
@@ -127,18 +142,33 @@ const NumberLists = () => {
       enable: '',
       locked: '',
     });
-    setActivePage(1);
   };
 
   // 切換頁面
   const changePage = (e, pageInfo) => {
     const changeQuery = {
       ...apiData,
-      ...pageList,
-      first_result: (parseInt(pageInfo.activePage, 10) - 1) * query.max_results,
+      first_result: (parseInt(pageInfo.activePage, 10) - 1) * pageList.max_results,
     };
     setApiData(changeQuery);
-    setActivePage(parseInt(pageInfo.activePage, 10));
+  };
+  // 確認是否符合當前搜尋
+  const checkLists = (userInfo) => {
+    const checkList = {
+      username: true,
+      enable: true,
+      locked: true,
+    };
+    if (apiData.username !== '') {
+      checkList.username = userInfo.username.indexOf(apiData.username) !== -1;
+    }
+    if (apiData.enable !== '') {
+      checkList.enable = apiData.enable === userInfo.enable;
+    }
+    if (apiData.locked !== '') {
+      checkList.locked = apiData.locked === userInfo.locked;
+    }
+    return checkList.username && checkList.locked && checkList.enable;
   };
 
   // 新增會員
@@ -151,16 +181,21 @@ const NumberLists = () => {
   };
 
   const createBtn = async () => {
-    await userCreate(userData);
-
-    const userTotal = await apiUser(apiData).then((response) => response.data.pagination.total);
-    let firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
-    if (userTotal % pageList.max_results === 0) {
-      firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
+    const result = await userCreate(userData).catch((error) => { setErrorMessage(error); });
+    if (typeof (result) !== 'undefined') {
+      if (result.data.result === 'ok') {
+        if (checkLists(userData)) {
+          const userTotal = pageList.total;
+          const firstResult = pageList.max_results;
+          let activePage = Math.ceil(userTotal / firstResult) - 1;
+          if (userTotal % firstResult === 0) {
+            activePage = Math.ceil(userTotal / firstResult);
+          }
+          const info = { ...apiData, first_result: activePage * pageList.max_results };
+          setApiData(info);
+        }
+      }
     }
-    setApiData({ ...apiData, first_result: firstResult * pageList.max_results });
-    setActivePage(Math.ceil(userTotal / pageList.max_results));
-    setUpdateData(1);
   };
 
   // 抓取會員修改後的資料
@@ -177,14 +212,22 @@ const NumberLists = () => {
   // 修改會員
   const modifyBtn = async () => {
     const userInfo = { ...userData };
-    await userModify(userInfo.id + 1, userInfo);
-    const userTotal = await apiUser(apiData).then((response) => response.data.pagination.total);
-    const firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
-    if ((activePage !== 1) && (userTotal % pageList.max_results === 0)) {
-      setActivePage(Math.ceil(userTotal / pageList.max_results));
-      setApiData({ ...apiData, first_result: firstResult * pageList.max_results });
+    const result = await userModify(userInfo.id, userInfo)
+      .catch((error) => { setErrorMessage(error); });
+    if (typeof (result) !== 'undefined') {
+      if (result.data.result === 'ok') {
+        const userTotal = pageList.total;
+        const firstResult = pageList.max_results;
+        let activePage = pageList.first_result;
+        if (userList.length === 1) {
+          if (!checkLists(userInfo)) {
+            activePage = (Math.ceil(userTotal / firstResult) - 2) * pageList.max_results;
+          }
+        }
+        const info = { ...apiData, first_result: activePage };
+        setApiData(info);
+      }
     }
-    setUpdateData(userInfo);
   };
 
   // 抓取會員的ID
@@ -199,23 +242,40 @@ const NumberLists = () => {
   // 刪除會員
   const deleteBtn = async () => {
     const userInfo = { ...deleteUser };
-    await userDelete(userInfo.id);
-    const userTotal = await apiUser(apiData).then((response) => response.data.pagination.total);
-    const firstResult = Math.ceil((userTotal - pageList.max_results) / pageList.max_results);
-    if ((activePage !== 1) && (userTotal % pageList.max_results === 0)) {
-      setActivePage(Math.ceil(userTotal / pageList.max_results));
-      setApiData({ ...apiData, first_result: firstResult * pageList.max_results });
+    const result = await userDelete(userInfo.id)
+      .catch((error) => { setErrorMessage(error); });
+    if (typeof (result) !== 'undefined') {
+      if (result.data.result === 'ok') {
+        const userTotal = pageList.total;
+        const firstResult = pageList.max_results;
+        let activePage = pageList.first_result;
+        if (userList.length === 1) {
+          activePage = (Math.ceil(userTotal / firstResult) - 2) * pageList.max_results;
+        }
+        const info = { ...apiData, first_result: activePage };
+        setApiData(info);
+      }
     }
-    setUpdateData(userInfo);
+  };
+
+  // 匯出功能
+  const exportDataInfo = (user) => {
+    exportData.push({
+      id: user.id,
+      username: user.username,
+      created_at: showTime(user.created_at),
+      enable: user.enable ? '啟用' : '停用',
+      locked: user.locked ? '' : '已封鎖',
+    });
   };
 
   return (
-    <div className="wrap-content">
-      <div className="number-table">
+    <div className="wrap_content">
+      <div className={styles.number_table}>
         <Grid>
           <Grid.Column floated="right" width={16}>
             <div>
-              <Form className="form-style">
+              <Form className={styles.form_style}>
                 <Form.Input
                   label="會員名稱"
                   value={userInfos.username}
@@ -223,7 +283,7 @@ const NumberLists = () => {
                     setUserInfos({ ...userInfos, username: pageInfo.value });
                   }}
                 />
-                <Form.Field className="form-date">
+                <Form.Field>
                   <p>開始日期</p>
                   <input
                     type="date"
@@ -234,7 +294,7 @@ const NumberLists = () => {
                     }}
                   />
                 </Form.Field>
-                <Form.Field className="form-date">
+                <Form.Field>
                   <p>結束日期</p>
                   <input
                     type="date"
@@ -272,12 +332,12 @@ const NumberLists = () => {
                     }}
                   />
                 </Form.Field>
-                <div className="form-btn">
+                <div className={styles.form_btn}>
                   <button className="ui button" type="submit" onClick={searchPage}>搜尋</button>
                   <button className="ui button" type="submit" onClick={clearPage}>清除</button>
                 </div>
               </Form>
-              <p className="total">
+              <p className={styles.total}>
                 {`目前有 ${parseInt(pageList.total, 10)} 人`}
               </p>
             </div>
@@ -317,7 +377,7 @@ const NumberLists = () => {
                       編輯
                     </button>
                   </Table.Cell>
-                  <Table.Cell className="user-delete">
+                  <Table.Cell className="user_delete">
                     <button
                       className="ui red button"
                       type="button"
@@ -335,14 +395,13 @@ const NumberLists = () => {
             }
           </Table.Body>
         </Table>
-        <div className="table-control">
+        <div className={styles.table_control}>
           <Pagination
-            boundaryRange={0}
             siblingRange={1}
             ellipsisItem={null}
             totalPages={Math.ceil(pageList.total / pageList.max_results)}
-            activePage={activePage}
             onPageChange={changePage}
+            activePage={pageList.first_result / pageList.max_results + 1}
           />
           <button
             type="button"
@@ -350,6 +409,13 @@ const NumberLists = () => {
             onClick={() => setFormBtnOpen(true)}
           >
             會員新增
+          </button>
+          <button
+            type="button"
+            className="ui positive button export"
+            onClick={() => setExportBtnOpen(true)}
+          >
+            匯出資料
           </button>
         </div>
       </div>
@@ -362,8 +428,8 @@ const NumberLists = () => {
         <Modal.Header>{modifyCheck ? '會員修改' : '新增會員'}</Modal.Header>
         <Modal.Content>
           <Form
-            id="create-form"
-            className="form-style"
+            id="create_form"
+            className={styles.form_style}
             onSubmit={() => {
               if (errorCheck(userData)) {
                 if (modifyCheck) {
@@ -398,7 +464,7 @@ const NumberLists = () => {
                 onChange={(e, pageInfo) => {
                   setUserData({ ...userData, enable: parseInt(pageInfo.value, 10) });
                 }}
-                error={!(String(userData.enable))}
+                error={!userData.enable && userData.enable !== 0}
               />
             </Form.Field>
             <Form.Field>
@@ -412,7 +478,7 @@ const NumberLists = () => {
                 onChange={(e, pageInfo) => {
                   setUserData({ ...userData, locked: parseInt(pageInfo.value, 10) });
                 }}
-                error={!(String(userData.locked))}
+                error={!userData.locked && userData.locked !== 0}
               />
             </Form.Field>
           </Form>
@@ -429,14 +495,14 @@ const NumberLists = () => {
           >
             取消
           </button>
-          <button type="submit" className="ui positive button" form="create-form">
+          <button type="submit" className="ui positive button" form="create_form">
             {modifyCheck ? '修改' : '新增'}
           </button>
         </Modal.Actions>
       </Modal>
       {/* 刪除彈跳視窗 */}
       <Confirm
-        className="remove-form"
+        className={styles.remove_form}
         open={deleteBtnOpen}
         header="移除會員"
         content={(
@@ -447,7 +513,7 @@ const NumberLists = () => {
             </span>
             此會員？
           </div>
-)}
+        )}
         cancelButton="取消"
         confirmButton="移除"
         onCancel={() => {
@@ -456,6 +522,86 @@ const NumberLists = () => {
         onConfirm={() => {
           deleteBtn();
           setDeleteBtnOpen(false);
+        }}
+      />
+      {/* 匯出彈跳視窗 */}
+      <Modal
+        onClose={() => setExportBtnOpen(false)}
+        onOpen={() => setExportBtnOpen(true)}
+        open={exportBtnOpen}
+      >
+        <Modal.Header>會員匯出</Modal.Header>
+        <Modal.Content>
+          <Table singleLine>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell>會員編號</Table.HeaderCell>
+                <Table.HeaderCell>會員名稱</Table.HeaderCell>
+                <Table.HeaderCell>註冊時間</Table.HeaderCell>
+                <Table.HeaderCell>狀態</Table.HeaderCell>
+                <Table.HeaderCell>異常</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {
+                userList.map((user) => (
+                  <Table.Row key={user.id}>
+                    <Table.Cell className="user-id">{user.id}</Table.Cell>
+                    <Table.Cell className="user-name">{user.username}</Table.Cell>
+                    <Table.Cell className="user-create-time">{showTime(user.created_at)}</Table.Cell>
+                    <Table.Cell className="user-enable">{user.enable ? '啟用' : '停用'}</Table.Cell>
+                    <Table.Cell className="user-locked">{user.locked ? '' : '已封鎖'}</Table.Cell>
+                    {exportDataInfo(user)}
+                  </Table.Row>
+                ))
+              }
+            </Table.Body>
+          </Table>
+        </Modal.Content>
+        <Modal.Actions>
+          <button
+            type="button"
+            className="ui black button"
+            onClick={() => {
+              setExportBtnOpen(false);
+            }}
+          >
+            取消
+          </button>
+          <CSVLink
+            data={exportData}
+            headers={exportHeaders}
+            className="ui positive button"
+            onClick={() => {
+              setExportBtnOpen(false);
+            }}
+            filename={`會員資料_${showTime(new Date())}`}
+          >
+            匯出
+          </CSVLink>
+        </Modal.Actions>
+      </Modal>
+      {/* 錯誤訊息彈跳視窗 */}
+      {/* <Modal open={errorMessage.open} size="small">
+        <Header icon="window close outline" color="red" content={errorMessage.header} />
+        <Modal.Content>
+          <h3>{errorMessage.message}</h3>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button color="red"
+          inverted onClick={() => setErrorMessage({ ...errorMessage, open: false })}>
+            Ok
+          </Button>
+        </Modal.Actions>
+      </Modal> */}
+      <Confirm
+        className={styles.error_box}
+        open={errorMessage.open}
+        header={<Header icon="window close outline" color="red" content={errorMessage.header} />}
+        content={errorMessage.message}
+        confirmButton="確定"
+        onConfirm={() => {
+          setErrorMessage({ ...errorMessage, open: false });
         }}
       />
     </div>

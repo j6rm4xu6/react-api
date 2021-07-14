@@ -1,9 +1,9 @@
 import React from 'react';
-import './css.css';
+import styles from './css.module.less';
 
 function Footer() {
   return (
-    <footer className="App-footer">
+    <footer className={styles.App_footer}>
       aaron_chen
     </footer>
   );

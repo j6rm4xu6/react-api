@@ -5,7 +5,7 @@ const cors = require('@koa/cors');
 const moment = require('moment');
 
 const app = new Koa();
-app.use(cors());
+// app.use(cors());
 const router = new Router({ prefix: '/api' });
 
 let userId = 1;

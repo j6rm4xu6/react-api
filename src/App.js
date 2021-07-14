@@ -1,17 +1,19 @@
 import React from 'react';
-import 'semantic-ui-css/semantic.min.css';
 import Sidebar from './components/sidebar';
 import Footer from './components/footer';
 import NumberLists from './components/NumberLists';
 import Header from './components/header';
-import './App.css';
+import styles from './App.module.less';
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+import 'semantic-ui-less/semantic.less';
 
 function App() {
   return (
     <div className="App">
       <Header />
       <Sidebar />
-      <section className="App-section">
+      <section className={styles.App_section}>
         <NumberLists />
       </section>
       <Footer />

@@ -1,9 +1,9 @@
 import React from 'react';
-import './css.css';
+import styles from './css.module.less';
 
 function Sidebar() {
   return (
-    <div className="App-sidebar">
+    <div className={styles.App_sidebar}>
       <p>slider</p>
     </div>
   );

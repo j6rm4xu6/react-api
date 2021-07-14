@@ -1,14 +1,14 @@
 import React from 'react';
 import { Grid, Image } from 'semantic-ui-react';
 import MenuList from '../menu';
-import './css.css';
+import styles from './css.module.less';
 
 function Header() {
   return (
-    <div className="App-header">
-      <div className="wrap-content">
-        <Grid padded className="App-header">
-          <Grid.Column floated="left" className="logo" width={5}>
+    <div className={styles.App_header}>
+      <div className={styles.wrap_content}>
+        <Grid padded className={styles.App_header}>
+          <Grid.Column floated="left" width={5}>
             <Image src="https://react.semantic-ui.com/images/wireframe/paragraph.png" />
           </Grid.Column>
           <Grid.Column floated="right" width={5}>

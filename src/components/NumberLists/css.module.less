@@ -1,0 +1,78 @@
+  @red : #db2828;
+  
+  .number_table {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding:40px 0 60px;
+  }
+  .total{
+    text-align: right;
+  }
+  
+  .form_style{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 1.25rem 1.5rem;
+
+    > div{
+      padding-right: 15px;
+      flex: 0 1 33%;
+    }
+
+    p{
+      display: block;
+      margin: 0 0 .28571429rem 0;
+      color: rgba(0,0,0,.87);
+      font-size: .92857143em;
+      font-weight: 700;
+      text-transform: none;
+    }
+
+    .form_btn{
+      flex:0 1 50%;
+    }
+
+    button{
+      margin:0 1em 1em 0!important; 
+    }
+
+  }
+  
+  
+  .table_control{
+    width: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+
+    button{
+      position: absolute;
+      left: 0;
+    }
+
+    button.export{
+      position: absolute;
+      left:unset;
+      right: 0;
+    }
+  }
+
+  .remove_form {
+
+    .actions{
+      display: flex;
+      flex-direction: row-reverse;
+    }
+
+    .ui.primary.button{
+      background-color: @red;
+     }
+  }
+
+  .error_box .actions button{
+      &:nth-of-type(1) {
+        display: none!important;
+      }
+  }
