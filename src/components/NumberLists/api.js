@@ -39,19 +39,3 @@ export const apiUser = (data) => userRequest.get('api/users', { params: data });
 export const userCreate = (data) => userRequest.post('api/user', data);
 export const userModify = (id, data) => userRequest.put(`/api/user/${id}`, data);
 export const userDelete = (id) => userRequest.delete(`/api/user/${id}`);
-
-// export const apiText = (method, url, data = null, config) => {
-//   switch (method.toLowerCase()) {
-//     case 'post':
-//       return userRequest.post(url, data, config);
-//     case 'get':
-//       return userRequest.get(url, { params: data });
-//     case 'delete':
-//       return userRequest.delete(url, { params: data });
-//     case 'put':
-//       return userRequest.put(url, data);
-//     default:
-//       console.log(`未知的 method: ${method}`);
-//       return false;
-//   }
-// };
