@@ -5,6 +5,6 @@ export const userRequest = axios.create({
 });
 
 export const apiUser = (data) => userRequest.get('api/users', { params: data });
-export const userCreate = (data) => userRequest.post('api/user', data);
-export const userModify = (id, data) => userRequest.put(`/api/User/${id}`, data, { params: id });
-export const userDelete = (id) => userRequest.delete(`/api/User/${id}`, { params: id });
+export const userCreate = (data) => userRequest.post('api/users', data);
+export const userModify = (id, data) => userRequest.put(`/api/Users/${id}`, data, { params: id });
+export const userDelete = (id) => userRequest.delete(`/api/Users/${id}`, { params: id });

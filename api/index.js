@@ -11,11 +11,11 @@ const router = new Router({ prefix: '/api' });
 let userId = 1;
 let users = [];
 
-for (let i = 0; i < 50; i++) {
+for (let i = 0; i < 61; i++) {
   users.push({
     id: userId,
     username: `user${userId}`,
-    enable: (Math.random() * 10) & 1,
+    enable: 1,
     locked: (Math.random() * 10) & 1,
     created_at: moment().subtract(Math.ceil(Math.random() * 1728000), 'seconds').format(),
   });
