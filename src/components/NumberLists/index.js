@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react';
 import {
   Table, Pagination, Grid, Form, Modal, Dropdown, Confirm, Input,
@@ -9,6 +10,7 @@ import { zhTW, enUS } from 'date-fns/locale';
 import Cookies from 'js-cookie';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
+import { connect } from '../../reducers';
 import i18n from '../../i18n';
 import {
   apiUser, userCreate, userDelete, userModify,
@@ -17,7 +19,14 @@ import {
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from './css.module.less';
 
-const NumberLists = () => {
+import { setOppa } from './action';
+
+const NumberLists = (props) => {
+  const { dispatch, numberListState } = props;
+
+  const { oppa } = numberListState;
+  console.log(oppa);
+
   // 初始化
   const pageListQuery = {
     first_result: 0,
@@ -406,6 +415,7 @@ const NumberLists = () => {
                         modifyInfo(user);
                         setFormBtnOpen(true);
                         setModifyCheck(true);
+                        setOppa()(dispatch);
                       }}
                     >
                       {t('button.editNumber')}
@@ -616,4 +626,8 @@ const NumberLists = () => {
   );
 };
 
-export default NumberLists;
+const mapStateToProps = (state) => ({
+  numberListState: state.numberListReducer,
+});
+
+export default connect(mapStateToProps)(NumberLists);
