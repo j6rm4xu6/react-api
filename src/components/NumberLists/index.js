@@ -19,13 +19,13 @@ import {
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from './css.module.less';
 
-import { setOppa } from './action';
+import { getFood } from './action';
 
 const NumberLists = (props) => {
   const { dispatch, numberListState } = props;
 
-  const { oppa } = numberListState;
-  console.log(oppa);
+  const { food } = numberListState;
+  console.log(food);
 
   // 初始化
   const pageListQuery = {
@@ -415,7 +415,7 @@ const NumberLists = (props) => {
                         modifyInfo(user);
                         setFormBtnOpen(true);
                         setModifyCheck(true);
-                        setOppa()(dispatch);
+                        getFood()(dispatch);
                       }}
                     >
                       {t('button.editNumber')}

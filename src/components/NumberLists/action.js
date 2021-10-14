@@ -1,3 +1,5 @@
+import request from '../../default/request';
+
 export const setOppa = () => (dispatch) => { // getStore
   dispatch({
     type: 'SET_OPPA',
@@ -5,9 +7,12 @@ export const setOppa = () => (dispatch) => { // getStore
   });
 };
 
-export const setOppas = () => (dispatch) => {
+export const getFood = () => async (dispatch) => {
+  const out = await request('GET', '/v2/Tourism/ScenicSpot');
+  console.log(out);
+
   dispatch({
-    type: 'SET_OPPA',
-    oppa: 3,
+    type: 'SET_FOOD',
+    food: out,
   });
 };

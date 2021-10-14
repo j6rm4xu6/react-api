@@ -1,5 +1,6 @@
 const initState = {
   oppa: 1,
+  food: [],
 };
 
 export default (state = initState, action) => {
@@ -9,6 +10,13 @@ export default (state = initState, action) => {
       return {
         ...state,
         oppa: action.oppa,
+      };
+
+    case 'SET_FOOD':
+
+      return {
+        ...state,
+        food: action.food,
       };
 
     default:
