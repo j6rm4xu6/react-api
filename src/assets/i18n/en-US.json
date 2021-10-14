@@ -1,0 +1,68 @@
+{
+  "menu": {
+  "home": "Home",
+  "myAccount": "My Account",
+  "enable": "Enabled people",
+  "locked": "Locked people"
+  },
+  "page":{
+    "enable": " people have been activated",
+    "locked": " people have been blocked",
+    "home": "HI~ I am Aaron"
+  },
+  "form": {
+    "memberName": "Member Name",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "status": "Status",
+    "blockade": "Blockade",
+    "all": "All",
+    "select": "Select",
+    "enable": "Enable",
+    "deactivate": "Deactivate",
+    "normal": "Normal",
+    "locked": "Locked",
+    "search": "Search",
+    "clear": "Clear",
+    "editMember":"Edit",
+    "createMember":"Create",
+    "deleteMember":"Delete",
+    "deleteUser":"Are you sure you want to delete '{{user}}' ?",
+    "exportMember":"Export",
+    "exportFileName":"members_{{date}}"
+  },
+  "table": {
+    "search": "To search for {{people}} people",
+    "id": "ID",
+    "userName": "User",
+    "userCreate": "Create Time",
+    "userEnable": "Enable",
+    "userLocked": "Locked",
+    "enable": "Enable",
+    "deactivate": "Deactivate",
+    "locked": "Locked"
+  },
+  "button": {
+    "createMember": "Create",
+    "editNumber": "Edit",
+    "deleteNumber": "Delete",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "ok": "Ok",
+    "cancel": "Cancel",
+    "export": "Export",
+    "Traditional": "Traditional",
+    "English": "English"
+
+  },
+  "error": {
+    "noSuch":"No such information,Let's change the keyword",
+    "api":"API Error:{{error}}"
+  },
+  "success": {
+    "created":"Successfully added ",
+    "modify":"Successfully modified",
+    "delete":"successfully deleted"
+  }
+}

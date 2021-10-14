@@ -1,0 +1,67 @@
+{
+  "menu": {
+    "home": "首頁",
+    "myAccount": "會員中心",
+    "enable": "啟用人數",
+    "locked": "封鎖人數"
+  },
+  "page":{
+    "enable": "人已啟用",
+    "locked": "人已封鎖",
+    "home": "HI~ 我是Aaron"
+  },
+  "form": {
+    "memberName": "會員名稱",
+    "startDate": "開始日期",
+    "endDate": "結束日期",
+    "status": "狀態",
+    "blockade": "異常",
+    "all": "全部",
+    "select": "請選擇",
+    "enable": "啟用",
+    "deactivate": "停用",
+    "normal": "正常",
+    "locked": "封鎖",
+    "search": "搜尋",
+    "clear": "清除",
+    "editMember":"會員修改",
+    "createMember":"新增會員",
+    "deleteMember":"移除會員",
+    "deleteUser":"確定刪除 '{{user}}' 嗎？",
+    "exportMember":"匯出會員",
+    "exportFileName":"會員資料_{{date}}"
+  },
+  "table": {
+    "search": "已搜尋 {{people}} 人",
+    "id": "會員編號",
+    "userName": "會員名稱",
+    "userCreate": "註冊時間",
+    "userEnable": "狀態",
+    "userLocked": "異常",
+    "enable": "啟用",
+    "deactivate": "停用",
+    "locked": "封鎖"
+  },
+  "button": {
+    "createMember": "新增會員",
+    "editNumber": "編輯",
+    "deleteNumber": "移除",
+    "create": "新增",
+    "edit": "修改",
+    "delete": "刪除",
+    "ok": "確定",
+    "cancel": "取消",
+    "export": "匯出",
+    "Traditional": "中文",
+    "English": "英文"
+  },
+  "error": {
+    "noSuch":"查無此資料，換個關鍵字吧",
+    "api":"API 錯誤：{{error}}"
+  },
+  "success": {
+    "created":"新增成功",
+    "modify":"修改成功",
+    "delete":"刪除成功"
+  }
+}

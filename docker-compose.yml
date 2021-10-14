@@ -1,0 +1,30 @@
+version: "3.7"
+services:
+  build:
+    build:
+      context: .
+      target: build
+
+  api-server:
+    build:
+      context: .
+      target: api-server
+    ports:
+      - "9988:9988"
+    networks:
+      - api
+
+  website:
+    build:
+      context: .
+      target: nginx_server
+    ports:
+      - "8888:80"
+    depends_on:
+      - api-server
+      - build
+    networks:
+      - api
+networks:
+  api:
+    driver: bridge
